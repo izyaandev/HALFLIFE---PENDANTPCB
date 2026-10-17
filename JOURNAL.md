@@ -4,7 +4,7 @@
 <!-- Generated: 2026-10-09T10:25:46.448Z -->
 
 > [!NOTE]
-> This devlog is mirrored from [Half Life](https://halflife.hackclub.com). Editing it here will not change the platform's copy, and the next sync overwrites this file.
+> This devlog is mirrored from [Half Life](https://halflife.hackclub.com) – [open the project](https://halflife.hackclub.com/projects/cmuwltcpq08uu01ose6k29kvm). Editing it here will not change the platform's copy, and the next sync overwrites this file.
 
 > A simple miniscule potable PCB, that has a microphone to record audio, and can be worn as an accessory
 
