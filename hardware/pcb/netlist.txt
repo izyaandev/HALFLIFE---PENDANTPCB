@@ -1,0 +1,141 @@
+COMPONENTS:
+ - HL: HL, source_component
+ - HR: HR, source_component
+ - SW1: SW1, source_component
+ - MIC1: MIC1, source_component
+ - C1: 100nF cap0603 capacitor
+ - C2: 10uF cap0805 capacitor
+ - R2: 100kΩ res0603 resistor
+ - R1: 220Ω res0603 resistor
+ - LED1: LED1, source_component
+ - SW2: SW2, source_component
+ - BAT1: BAT1, source_component
+ - R3: 200kΩ res0603 resistor
+ - R4: 200kΩ res0603 resistor
+
+NET: HR_V3V3
+  - SW1 pin1
+  - HR V3V3
+
+NET: MIC1_SCK
+  - MIC1 SCK
+  - HL D0
+
+NET: MIC1_WS
+  - MIC1 WS
+  - HL D1
+
+NET: MIC1_SD
+  - MIC1 SD
+  - HL D2
+
+NET: MIC_VDD
+  - HL D5
+  - R2 pin1
+  - C2 pin1 (+)
+  - C1 pin1 (+)
+  - MIC1 VDD
+  - SW1 pin2
+
+NET: R1_pos
+  - HL D6
+  - R1 pin1
+
+NET: LED1_pos
+  - R1 pin2
+  - LED1 pin1 (+)
+
+NET: HL_D4
+  - HL D4
+  - SW2 pin1
+
+NET: VBAT
+  - R3 pin1
+  - BAT1 pin1 (+)
+
+NET: GND
+  - R4 pin2
+  - BAT1 pin2 (-)
+  - SW2 pin2
+  - LED1 pin2 (-)
+  - HR GND
+  - MIC1 L_R
+  - MIC1 GND
+  - R2 pin2
+  - C2 pin2 (-)
+  - C1 pin2 (-)
+
+NET: VBAT_SENSE
+  - HL D3
+  - R4 pin1
+  - R3 pin2
+
+
+COMPONENT_PINS:
+HL
+- pin1(D0): NETS(MIC1_SCK)
+- pin2(D1): NETS(MIC1_WS)
+- pin3(D2): NETS(MIC1_SD)
+- pin4(D3): NETS(VBAT_SENSE)
+- pin5(D4): NETS(HL_D4)
+- pin6(D5): NETS(MIC_VDD)
+- pin7(D6): NETS(R1_pos)
+
+HR
+- pin1(V5): NOT_CONNECTED
+- pin2(GND): NETS(GND)
+- pin3(V3V3): NETS(HR_V3V3)
+- pin4(D10): NOT_CONNECTED
+- pin5(D9): NOT_CONNECTED
+- pin6(D8): NOT_CONNECTED
+- pin7(D7): NOT_CONNECTED
+
+SW1
+- pin1: NETS(HR_V3V3)
+- pin2: NETS(MIC_VDD)
+
+MIC1
+- pin1(SCK): NETS(MIC1_SCK)
+- pin2(WS): NETS(MIC1_WS)
+- pin3(SD): NETS(MIC1_SD)
+- pin4(L_R): NETS(GND)
+- pin5(GND): NETS(GND)
+- pin6(VDD): NETS(MIC_VDD)
+
+C1 (100nF cap0603)
+- pin1(anode, pos, left): NETS(MIC_VDD)
+- pin2(cathode, neg, right): NETS(GND)
+
+C2 (10uF cap0805)
+- pin1(anode, pos, left): NETS(MIC_VDD)
+- pin2(cathode, neg, right): NETS(GND)
+
+R2 (100kΩ res0603)
+- pin1(anode, pos, left): NETS(MIC_VDD)
+- pin2(cathode, neg, right): NETS(GND)
+
+R1 (220Ω res0603)
+- pin1(anode, pos, left): NETS(R1_pos)
+- pin2(cathode, neg, right): NETS(LED1_pos)
+
+LED1
+- pin1(anode, pos, left): NETS(LED1_pos)
+- pin2(cathode, neg, right): NETS(GND)
+
+SW2
+- pin1: NETS(HL_D4)
+- pin2: NETS(GND)
+- pin3: NOT_CONNECTED
+- pin4: NOT_CONNECTED
+
+BAT1
+- pin1(anode, pos, left): NETS(VBAT)
+- pin2(cathode, neg, right): NETS(GND)
+
+R3 (200kΩ res0603)
+- pin1(anode, pos, left): NETS(VBAT)
+- pin2(cathode, neg, right): NETS(VBAT_SENSE)
+
+R4 (200kΩ res0603)
+- pin1(anode, pos, left): NETS(VBAT_SENSE)
+- pin2(cathode, neg, right): NETS(GND)

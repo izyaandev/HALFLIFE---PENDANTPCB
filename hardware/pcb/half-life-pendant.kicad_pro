@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "head": {
+    "generator": "circuit-json-to-kicad",
+    "generator_version": "0.0.1",
+    "project_name": "half-life-pendant",
+    "created": "2026-10-17T06:26:44.701Z",
+    "modified": "2026-10-17T06:26:44.701Z"
+  },
+  "meta": {
+    "version": 1
+  },
+  "text_variables": {},
+  "libraries": {
+    "pinned_symbol_libs": [],
+    "pinned_footprint_libs": []
+  },
+  "boards": [],
+  "cvpcb": {
+    "meta": {
+      "version": 0
+    }
+  },
+  "erc": {
+    "meta": {
+      "version": 0
+    },
+    "erc_exclusions": []
+  },
+  "net_settings": {
+    "meta": {
+      "version": 1
+    },
+    "last_net_id": 0,
+    "classes": [
+      {
+        "name": "Default",
+        "track_width": 0.2,
+        "via_diameter": 0.6,
+        "via_drill": 0.3,
+        "clearance": 0.1
+      }
+    ]
+  },
+  "pcbnew": {
+    "page_layout_descr_file": "",
+    "last_paths": {}
+  },
+  "schematic": {
+    "meta": {
+      "version": 1
+    },
+    "page_layout_descr_file": "",
+    "last_opened_files": [
+      "half-life-pendant.kicad_sch"
+    ]
+  },
+  "board": {
+    "meta": {
+      "version": 1
+    },
+    "design_settings": {
+      "rules": {
+        "min_via_annular_width": 0.15,
+        "min_hole_clearance": 0.1,
+        "min_via_diameter": 0.6,
+        "min_track_width": 0.2,
+        "min_through_hole_diameter": 0.3
+      }
+    },
+    "last_opened_board": "half-life-pendant.kicad_pcb"
+  },
+  "sheets": [
+    [
+      "761fe41e-5279-4126-9eb6-087491b74d7b",
+      "Root"
+    ]
+  ]
+}

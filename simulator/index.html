@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Half Life pendant simulator</title>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--ink:#1a1a18;--mut:#6b6a63;--line:#e0ded6;--ok:#0f8a5f;--warn:#b7791f;--bad:#c53030;--acc:#3b5bdb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141413;--card:#1f1f1d;--ink:#efede6;--mut:#a3a199;--line:#33322e;--ok:#34c38f;--warn:#e0a63a;--bad:#f06565;--acc:#7c93ff}}
+:root[data-theme="dark"]{--bg:#141413;--card:#1f1f1d;--ink:#efede6;--mut:#a3a199;--line:#33322e;--ok:#34c38f;--warn:#e0a63a;--bad:#f06565;--acc:#7c93ff}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0 0 2px}.sub{color:var(--mut);font-size:13px;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:12px}
+@media(max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+h2{font-size:13px;font-weight:500;color:var(--mut);margin:0 0 10px;text-transform:uppercase;letter-spacing:.04em}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0}
+button{font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer}
+button:hover{border-color:var(--mut)}button.hot{background:var(--acc);color:#fff;border-color:var(--acc)}
+.chip{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--line)}
+.sw{position:relative;width:56px;height:28px;border-radius:14px;background:var(--bad);border:0;padding:0;transition:background .2s}
+.sw.on{background:var(--ok)}.sw i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s}.sw.on i{transform:translateX(28px)}
+canvas{width:100%;height:120px;display:block}
+.m{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.m div{background:var(--bg);border-radius:8px;padding:8px 10px}.m b{display:block;font-size:18px;font-weight:500}.m span{font-size:12px;color:var(--mut)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--ok);width:50%;transition:width .3s}
+.rec{border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;font-size:14px}
+.rec small{color:var(--mut)}.tag{font-size:11px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);margin-right:4px}
+#log{font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;color:var(--mut);height:130px;overflow:auto;white-space:pre-wrap}
+input[type=range]{width:140px}
+.led{width:14px;height:14px;border-radius:50%;background:var(--line);display:inline-block}.led.on{background:#e53e3e;box-shadow:0 0 8px #e53e3e}
+</style></head><body><div class="wrap">
+<h1>Half Life pendant simulator</h1>
+<p class="sub">Concept model of the pendant's logic. Numbers are design assumptions, not measurements from real hardware.</p>
+<div class="grid"><div>
+<div class="card"><h2>Pendant controls</h2>
+<div class="row"><button class="sw on" id="sw" aria-label="Privacy switch"><i></i></button><b id="swl">Privacy switch: mic powered</b></div>
+<div class="row"><span class="led" id="led"></span><span id="state" class="chip">IDLE</span><span class="chip" id="d5">D5 high</span></div>
+<div class="row"><button id="talk" class="hot">Hold to speak (or Space)</button><button id="bm">Bookmark</button></div>
+<div class="row"><label>Room noise <input type="range" id="noise" min="0" max="10" value="2"></label></div>
+<div class="row"><label>VAD threshold <input type="range" id="thr" min="5" max="60" value="22"></label></div>
+<div class="row"><button id="wifi">Wi-Fi: off</button><button id="clr">Delete everything</button></div></div>
+<div class="card"><h2>Battery and storage (time x60)</h2>
+<div class="m"><div><b id="bat">100%</b><span>battery</span></div><div><b id="ma">0 mA</b><span>draw now</span></div><div><b id="eta">-</b><span>hours left</span></div></div>
+<div class="bar" style="margin:10px 0 4px"><i id="batb" style="width:100%"></i></div>
+<div class="m" style="margin-top:8px"><div><b id="sd">0 KB</b><span>on microSD</span></div><div><b id="up">0</b><span>uploaded</span></div><div><b id="cnt">0</b><span>recordings</span></div></div></div>
+</div><div>
+<div class="card"><h2>Live microphone and voice detection</h2><canvas id="cv" width="640" height="120"></canvas>
+<p class="sub" style="margin:6px 0 0">Pre-roll 1.5 s kept before speech. Hangover 2.5 s after speech stops. Dashed line = threshold.</p></div>
+<div class="card"><h2>Recordings (AI pipeline)</h2><div id="list"><p class="sub">Hold the speak button to record a conversation.</p></div></div>
+<div class="card"><h2>Device log</h2><div id="log"></div></div>
+</div></div></div>
+<script>
+var $=function(i){return document.getElementById(i)};
+var S={priv:true,speak:false,wifi:false,state:'IDLE',hang:0,t:0,bat:100,sd:0,up:0,recs:[],cur:null,buf:[],pre:0,words:0};
+var LINES=["We should ship the privacy switch first.","The budget for the pendant is fine for now.","Next week we finish the enclosure design.","Remember to order the extra microphones.","Let us test the voice detection outdoors."];
+function log(m){var l=$('log');l.textContent+=new Date().toLocaleTimeString().slice(0,8)+'  '+m+'\n';l.scrollTop=l.scrollHeight}
+function setState(s){S.state=s;var e=$('state');e.textContent=s;e.style.color=s=='RECORDING'?'var(--bad)':s=='HANGOVER'?'var(--warn)':s=='PRIVATE'?'var(--mut)':'var(--ok)'}
+function mA(){return !S.priv?8:S.state=='RECORDING'||S.state=='HANGOVER'?78:46}
+var mic=true;
+function setMic(on){mic=on;$('sw').classList.toggle('on',on);$('swl').textContent=on?'Privacy switch: mic powered':'Privacy switch: MIC OFF (no power)';$('d5').textContent=on?'D5 high':'D5 low';
+ if(!on){if(S.cur)closeRec();setState('PRIVATE');log('Switch OFF: mic has no power, recording impossible')}else{setState('IDLE');log('Switch ON: mic powered')}}
+S.priv=false;
+mA=function(){return !mic?8:(S.state=='RECORDING'||S.state=='HANGOVER')?78:46};
+$('sw').onclick=function(){setMic(!mic)};
+$('wifi').onclick=function(){S.wifi=!S.wifi;$('wifi').textContent='Wi-Fi: '+(S.wifi?'on':'off');log('Wi-Fi '+(S.wifi?'connected: uploading queue':'lost: buffering on microSD'))};
+$('bm').onclick=function(){if(S.cur){S.cur.bm.push(Math.round(S.cur.sec));log('Bookmark at '+Math.round(S.cur.sec)+' s')}else log('Bookmark ignored (not recording)')};
+$('clr').onclick=function(){S.recs=[];S.sd=0;S.up=0;render();log('Everything deleted')};
+var tk=$('talk');['pointerdown'].forEach(function(e){tk.addEventListener(e,function(){S.speak=true})});['pointerup','pointerleave'].forEach(function(e){tk.addEventListener(e,function(){S.speak=false})});
+addEventListener('keydown',function(e){if(e.code=='Space'){e.preventDefault();S.speak=true}});addEventListener('keyup',function(e){if(e.code=='Space')S.speak=false});
+function openRec(){S.cur={sec:S.pre*0+1.5,spoken:0,bm:[],id:S.recs.length+1};log('VAD: speech detected, flushing 1.5 s pre-roll, opening WAV chunk')}
+function route(w){return w<40?'fast model':'strong model'}
+function closeRec(){var c=S.cur;S.cur=null;var n=Math.max(4,Math.round(c.spoken*2.5)),txt=[];for(var i=0;txt.join(' ').split(' ').length<n&&i<30;i++)txt.push(LINES[(c.id+i)%LINES.length]);
+ var r={id:c.id,dur:Math.round(c.sec),words:n,txt:txt.join(' '),bm:c.bm,tier:route(n),sum:'Discussed '+(n<40?'a quick topic':'several topics')+' about the pendant build.',status:'on SD'};S.recs.unshift(r);S.sd+=Math.round(c.sec*32);setState(mic?'IDLE':'PRIVATE');log('Chunk closed: '+r.dur+' s saved to microSD');render()}
+function render(){$('cnt').textContent=S.recs.length;$('sd').textContent=S.sd+' KB';$('up').textContent=S.up;
+ $('list').innerHTML=S.recs.length?S.recs.map(function(r){return '<div class="rec"><b>Conversation '+r.id+'</b> <small>'+r.dur+' s, '+r.words+' words</small><br><span class="tag">'+r.status+'</span><span class="tag">router: '+r.tier+'</span>'+(r.bm.length?'<span class="tag">bookmarks: '+r.bm.join(', ')+' s</span>':'')+'<br><small>Transcript:</small> '+r.txt+'<br><small>Summary:</small> '+r.sum+'</div>'}).join(''):'<p class="sub">Hold the speak button to record a conversation.</p>'}
+var cv=$('cv'),cx=cv.getContext('2d');
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+setInterval(function(){
+ var thr=+$('thr').value,noise=+$('noise').value,lvl;
+ if(!mic)lvl=0;else lvl=(S.speak?30+Math.random()*60:0)+Math.random()*noise*2.2;
+ S.buf.push(lvl);if(S.buf.length>128)S.buf.shift();
+ var voice=mic&&lvl>thr;
+ if(mic){
+  if(S.state=='IDLE'&&voice){setState('RECORDING');openRec()}
+  else if(S.state=='RECORDING'){S.cur.sec+=.05;if(voice)S.cur.spoken+=.05;else{S.hang=0;setState('HANGOVER')}}
+  else if(S.state=='HANGOVER'){S.cur.sec+=.05;S.hang+=.05;if(voice){setState('RECORDING')}else if(S.hang>=2.5)closeRec()}
+ }
+ $('led').classList.toggle('on',mic&&(S.state=='RECORDING'||S.state=='HANGOVER'));
+ S.t+=.05;S.bat=Math.max(0,S.bat-mA()*3/3600/500*100);
+ var pct=Math.round(S.bat);$('bat').textContent=pct+'%';$('batb').style.width=pct+'%';$('batb').style.background=pct<20?css('--bad'):css('--ok');$('ma').textContent=mA()+' mA';$('eta').textContent=(S.bat*5/mA()).toFixed(1);
+ draw(thr);
+},50);
+setInterval(function(){if(S.wifi){var r=S.recs.filter(function(x){return x.status=='on SD'})[0];if(r){log('Uploading conversation '+r.id+' -> transcribe -> router ('+r.tier+') -> database');r.status='uploaded';S.up++;S.sd=Math.max(0,S.sd-r.dur*32);render()}}},1200);
+function draw(thr){var w=cv.width,h=cv.height;cx.clearRect(0,0,w,h);var n=S.buf.length,bw=w/128;
+ for(var i=0;i<n;i++){var v=S.buf[i],hh=Math.min(h/2-2,v*.55+1);cx.fillStyle=v>thr?css('--ok'):css('--mut');cx.fillRect(i*bw+(128-n)*bw,h/2-hh,bw-1.5,hh*2)}
+ cx.setLineDash([5,4]);cx.strokeStyle=css('--warn');var ty=h/2-Math.min(h/2-2,thr*.55+1);cx.beginPath();cx.moveTo(0,ty);cx.lineTo(w,ty);cx.stroke();cx.beginPath();cx.moveTo(0,h-ty);cx.lineTo(w,h-ty);cx.stroke();cx.setLineDash([])}
+setState('IDLE');log('Pendant booted. Mic powered, listening for speech.');render();
+</script></body></html>
